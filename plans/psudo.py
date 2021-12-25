@@ -1,5 +1,5 @@
 # players
-list_of_players = [{'player': 1, 'money': 0}, {'player': 2, 'money': 0}, {'player': 3, 'money': 0}]
+list_of_players = [{'player': 1, 'money': 0}, {'player': 2, 'money': 0}, {'player': 3, 'money': 0}]  [{'player': 1, 'money': 0, 'total bank': 0}
 
 # wheel
 wheel = ['BANKRUPT', 'Lose a Turn', 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900]
@@ -45,7 +45,7 @@ function game(list_of_players)
 
 
 	# round 3				
-	winner = player with max money
+	winner = player with max money # max bank after 2 rounds (if tie choose random)
 
 	secret_phrase = setupPhrase()
 	secret_phrase_display = '_ _ _ _ _' from secret_phrase
@@ -81,7 +81,7 @@ function game(list_of_players)
 
 	print("Final results")
 	for player in player_list:
-   		print(f"Player {player['player']}, ${player['money']}")
+   		print(f"Player {player['player']}, ${player['money']}, ${player['total']")
 
 
 # returns 0 if round is over (word is guessed)
@@ -95,45 +95,47 @@ function turn(player, secret_phrase, secret_phrase_display)
 			return guessThePhrase(secret_phrase)
 
 		return buyVowel(player, secret_phrase, secret_phrase_display) # returns 0, 1, or 2
+	
+	else
 
-	input ('guess the phrase' or 'spin the wheel')
+		input ('guess the phrase' or 'spin the wheel')
 
-		if 'turn the wheel'
+			if 'spin the wheel'
 
-			turn wheel (random.choice(wheel))
+				turn wheel (random.choice(wheel))
 
-			if number
+				if number
 
-				consonant = getValidConsonant() # input("enter consonant")
+					consonant = getValidConsonant() # input("enter consonant")
 
-				if consonant in secret_phrase
-					player[money] += number
-					reveal letter in display
+					if consonant in secret_phrase
+						player[money] += number # (* count)
+						reveal letter in display
 
-					if word is fully guessed # round over
-						return 0
+						if word is fully guessed # round over
+							return 0
 
-					else
+						else
 
-						input('Buy a vowel?')
+							input('Buy a vowel?')
 
-						if yes
-							return buyVowel(player, secret_phrase, secret_phrase_display) # returns 0, 1, or 2
-						else 
-							return 2 # turn not over
+							if yes
+								return buyVowel(player, secret_phrase, secret_phrase_display) # returns 0, 1, or 2
+							else 
+								return 2 # turn not over
 
-				else # consonant NOT in secret_phrase
+					else # consonant NOT in secret_phrase
+						return 1 # turn is over
+				
+				elif bankrupt
+					player[money] = 0
 					return 1 # turn is over
-			
-			elif bankrupt
-				player[money] = 0
-				return 1 # turn is over
 
-			else 
-				return 1 # turn is over
+				else 
+					return 1 # turn is over
 
-		else # guess the word
-			return guessThePhrase(secret_phrase)
+			else # guess the word
+				return guessThePhrase(secret_phrase)
 		
 
 
