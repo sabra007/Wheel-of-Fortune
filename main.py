@@ -52,6 +52,8 @@ def start():
 
 def game(list_of_players, wheel, phrases):
 
+    round_winners = []
+
     # rounds 1 and 2
     for round in range (1, 3):
 
@@ -59,7 +61,7 @@ def game(list_of_players, wheel, phrases):
         guessed_letters = []
         # set a new secret word
         secret_phrase = setupPhrase(phrases)
-        print(secret_phrase)
+        # print(secret_phrase)
 
         display = list(secret_phrase[0])
         
@@ -75,13 +77,18 @@ def game(list_of_players, wheel, phrases):
                 
                 turn_is_over = False
                 while not turn_is_over:
-                
-                    turn(player, secret_phrase, display, guessed_letters, wheel) #returns 0, 1, or 2
+                    
+                    turn_outcome = turn(player, secret_phrase, display, guessed_letters, wheel, round) #returns 0, 1, or 2
 
-                    if 0: #  round is over
+                    if turn_outcome  == 0: #  round is over
                         round_is_over = True
+                        print("You guess was correct !!!")
+                        print(f"Round {round} is over.")
+                        winner = roundResults(round, list_of_players)
+                        round_winners.append(winner)
+
                         break;
-                    elif 1: # turn is over
+                    elif turn_outcome == 1: # turn is over
                         turn_is_over = True
                         continue
                     else: # 2 turn is not over
@@ -93,51 +100,85 @@ def game(list_of_players, wheel, phrases):
                 break; # only executed if the inner loop DID break
 
 
-# 	# round 3				
-# 	winner = player with max money # max bank after 2 rounds (if tie choose random)
-
-# 	secret_phrase = setupPhrase()
-# 	secret_phrase_display = '_ _ _ _ _' from secret_phrase
-
-# 	for letter in ['R', 'S', 'T', 'L', 'N', 'E']:
-# 		revealLetter(letter, secret_phrase, secret_phrase_display)
-
-# 	print('enter 3 more consonants')
-# 	c1 = getValidConsonant() 
-# 	c2 = getValidConsonant() 
-# 	c3 = getValidConsonant()
-# 	print('enter a vowel')
-# 	v = getValidVowel()
-
-# 	guesses = [c1, c2, c3, v]
-# 	for letter in guesses:
-# 		revealLetter(letter, secret_phrase, secret_phrase_display)
-
-# 	print("you have 20 seconds to guess the phrase")
-# 	start = time.start()
-# 	result = guessThePhrase(secret_phrase)
-# 	end = time.time()
-
-# 	if result == 0 
-# 		if (end - start) < 20
-# 			print("you win ")
-# 			winner['money'] += 5000
-# 		else
-# 			print('You guessed correctly but you ran out of time')
-# 	else
-# 		print(f'your answer was wrong, the correct asnwer was {secret_phrase}')
+    print("resutls after first two rounds")
+    for player in list_of_players:
+        print(f"{player['player']:-<15} $ {player['total bank']}")
 
 
-# 	print("Final results")
-# 	for player in player_list:
-#    		print(f"Player {player['player']}, ${player['money']}, ${player['total']")
+    # Final Round
 
+    # winner = player with max money # max bank after 2 rounds (if tie choose random)
+
+    # secret_phrase = setupPhrase()
+    # secret_phrase_display = '_ _ _ _ _' from secret_phrase
+
+    # for letter in ['R', 'S', 'T', 'L', 'N', 'E']:
+    #     revealLetter(letter, secret_phrase, secret_phrase_display)
+
+    # print('enter 3 more consonants')
+    # c1 = getValidConsonant() 
+    # c2 = getValidConsonant() 
+    # c3 = getValidConsonant()
+    # print('enter a vowel')
+    # v = getValidVowel()
+
+    # guesses = [c1, c2, c3, v]
+    # for letter in guesses:
+    #     revealLetter(letter, secret_phrase, secret_phrase_display)
+
+    # print("you have 20 seconds to guess the phrase")
+    # start = time.start()
+    # result = guessThePhrase(secret_phrase)
+    # end = time.time()
+
+    # if result == 0 
+    #     if (end - start) < 20
+    #         print("you win ")
+    #         winner['money'] += 5000
+    #     else
+    #         print('You guessed correctly but you ran out of time')
+    # else
+    #     print(f'your answer was wrong, the correct asnwer was {secret_phrase}')
+
+
+    # print("Final results")
+    # for player in player_list:
+    #     print(f"Player {player['player']}, ${player['money']}, ${player['total']")
+
+
+def roundResults(round, list_of_players):
+    print(f"Round {round} results")
+    max = 0
+    
+    #in case there is a tie
+    winners_list = []
+    
+    for player in list_of_players:
+        if player['money'] > max:
+            max = player['money']
+            winners_list.append(player)
+        elif player['money'] == max:
+            winners_list.append(player)
+    
+    winner = random.choice(winners_list)
+    
+    print(f"The winner of round {round} is {winner['player']}: $ {winner['money']}.")
+    
+    for player in list_of_players:
+        if player == winner:
+            player['total bank'] += player['money']
+        player['money'] = 0
+
+
+    return winner
+
+ 
 
 # retruns true if display is hiding only vowels
 def onlyVowelsLeft(secret_phrase, display):
     vowels = ['a', 'e', 'i', 'o', 'u']
     for i in range(len(display)):
-        if secret_phrase[i] not in vowels and display[i] == '_':
+        if secret_phrase[0][i] not in vowels and display[i] == '_':
             return False
     return True
 
@@ -151,7 +192,7 @@ def playerChoice():
                 print("Invalid Input.")
 
 # returns true if player wants to buy a vowel
-def buyAVowel():
+def wantTobuyAVowel():
     while 1:
         choice = input("Do you want to buy a vowel? y/n: ").lower()
         if choice == 'y':
@@ -165,19 +206,24 @@ def buyAVowel():
 # returns 0 if round is over (word is guessed)
 # returns 1 if turn is over
 # returns 2 if turn is not over
-def turn(player, secret_phrase, display, guessed_letters, wheel):
+def turn(player, secret_phrase, display, guessed_letters, wheel, round):
     
-    printDisplay(player, secret_phrase, display, guessed_letters)
+    printDisplay(player, secret_phrase, display, guessed_letters, round)
     
+    # only vowels left
     if onlyVowelsLeft(secret_phrase, display):
         
         print("Only vowels left.")
-
-        if player['money'] < 250: 
-            print("You don't have enough money to buy a vowel. Try t o guess the phrase.")
+        
+        #player does not want to buy vowels
+        if not wantTobuyAVowel():
             return guessThePhrase(secret_phrase)
-
-        return buyVowel(player, secret_phrase, display, guessed_letters) # returns 0, 1, or 2
+        else: # player wants to buy vowels
+            if player['money'] < 250: 
+                print("You don't have enough money to buy a vowel. Try to guess the phrase.")
+                return guessThePhrase(secret_phrase)
+            else:
+                return buyVowel(player, secret_phrase, display, guessed_letters, round) # returns 0, 1, or 2
 
     else:
 
@@ -201,15 +247,20 @@ def turn(player, secret_phrase, display, guessed_letters, wheel):
                         count += 1
 
                 if consonant in secret_phrase[0]:
-                    player['money'] += count * wheel_value # (* count)
+                    player['money'] += count * wheel_value 
+                    
+                    if count > 1:
+                        print(f"There are {count} number of {consonant.upper()}s.\nYou get ${count * wheel_value}.")
+                    else:
+                        print(f"There is one {consonant}.\nYou get ${wheel_value}.")
                     revealLetter(consonant, secret_phrase, display)
-                    printDisplay(player, secret_phrase, display, guessed_letters)
+                    printDisplay(player, secret_phrase, display, guessed_letters, round)
 
                     if '_' not in display: # round over
                         return 0
                     else:
-                        if buyAVowel():
-                            return buyVowel(player, secret_phrase, display, guessed_letters) # returns 0, 1, or 2
+                        if wantTobuyAVowel():
+                            return buyVowel(player, secret_phrase, display, guessed_letters, round) # returns 0, 1, or 2
                         else:
                             return 2 # turn not over
                 else: # consonant NOT in secret_phrase
@@ -234,7 +285,7 @@ def turn(player, secret_phrase, display, guessed_letters, wheel):
 # # returns 0 if round is over (word is guessed)
 # # returns 1 if turn is over
 # # returns 2 if turn is not over
-def buyVowel(player, secret_phrase, display,  guessed_letters):
+def buyVowel(player, secret_phrase, display,  guessed_letters, round):
     
     while 1:
 
@@ -245,16 +296,17 @@ def buyVowel(player, secret_phrase, display,  guessed_letters):
             
             if vowel in secret_phrase[0]:
                 revealLetter(vowel, secret_phrase, display)
-                printDisplay(player, secret_phrase, display)
+                printDisplay(player, secret_phrase, display, guessed_letters, round)
+                
+                #check if word is guessed
+                if '_' not in display: # round over
+                    return 0
+                
                 # player can choose to buy another vowel or guess the word or spin the wheel
-                if buyAVowel():
+                if wantTobuyAVowel():
                     continue
                 else:
-                    choice = playerChoice() # return 's' or 'g'
-                    if choice == 's':
-                        return 2
-                    else:
-                        return guessThePhrase(secret_phrase)
+                    return 2
             else:
                 print(f"{vowel} is not in the phrase.")
                 return 1
@@ -272,9 +324,7 @@ def buyVowel(player, secret_phrase, display,  guessed_letters):
 # 
 def guessThePhrase(secret_phrase):
 
-    if input("Guess the phrase: ") == secret_phrase[0]:
-        print("You guess was correct !!!")
-        print("Round over.")
+    if input("Guess the phrase: ") == secret_phrase[0].lower():
         return 0
     else:
         print("Wrong guess.")
@@ -290,7 +340,7 @@ def getValidVowel(guessed_letters):
             guessed_letters.append(vowel)
             return vowel
         else:
-            print(f"{vowel} is not a vowel. Please try again.")
+            print(f"{vowel} is not a vowel or it has already been guessed. Please try again.")
 
 
 def getValidConsonant(guessed_letters):
@@ -301,7 +351,7 @@ def getValidConsonant(guessed_letters):
             guessed_letters.append(consonant)
             return consonant
         else:
-            print(f"{consonant} is not a consonant. Please try again.")
+            print(f"{consonant} is not a consonant or it has already been guessed. Please try again.")
 
 
 # # open letters in diplay
@@ -309,17 +359,18 @@ def getValidConsonant(guessed_letters):
 def revealLetter(letter, secret_phrase, display):
     for i in range(len(secret_phrase[0])):
         if secret_phrase[0][i] == letter:
-            display[i] = letter
+            display[i] = letter.upper()
 
 
-def printDisplay(player, secret_phrase, display, guessed_letters):
-    print("===================================")
+def printDisplay(player, secret_phrase, display, guessed_letters, round):
+    print(f"===================================")
+    print(f"--------------ROUND {round}--------------\n")
+    print(f"")
     print(f"Player: {player['player']}: $ {player['money']}")
     print(f"{' '.join(display)}")
-    print(f"\n{secret_phrase[1]}")
+    print(f"\nCategory: {secret_phrase[1]}")
     print(f"Previous guesses {', '.join(guessed_letters)}")
     print("===================================")
-    print(f"cheat: {secret_phrase[0]}")
 
 
 
