@@ -1,6 +1,7 @@
 import json
 import random
 import re
+import time
 
 def setupPhrase(phrases):
     secret_phrase =  random.choice(phrases)
@@ -39,10 +40,11 @@ def start():
 
     # setup players
     list_of_players = [{'player': player1, 'money': 0, 'total bank': 0}, 
-                       {'player': player2, 'money': 0, 'total bank': 0},
-                       {'player': player3, 'money': 0, 'total bank': 0}]
+                                      {'player': player2, 'money': 0, 'total bank': 0},
+                                      {'player': player3, 'money': 0, 'total bank': 0}]
 
-    
+    random.shuffle(list_of_players)
+
     phrases = cleanData()
 
     # wheel
@@ -53,7 +55,7 @@ def start():
 def game(list_of_players, wheel, phrases):
 
     round_winners = []
-
+    
     # rounds 1 and 2
     for round in range (1, 3):
 
@@ -61,7 +63,7 @@ def game(list_of_players, wheel, phrases):
         guessed_letters = []
         # set a new secret word
         secret_phrase = setupPhrase(phrases)
-        # print(secret_phrase)
+        print(secret_phrase)
 
         display = list(secret_phrase[0])
         
@@ -82,7 +84,7 @@ def game(list_of_players, wheel, phrases):
 
                     if turn_outcome  == 0: #  round is over
                         round_is_over = True
-                        print("You guess was correct !!!")
+                        print("Your guess was correct !!!")
                         print(f"Round {round} is over.")
                         winner = roundResults(round, list_of_players)
                         round_winners.append(winner)
@@ -107,72 +109,106 @@ def game(list_of_players, wheel, phrases):
 
     # Final Round
 
-    # winner = player with max money # max bank after 2 rounds (if tie choose random)
+    winner = finalWinner(list_of_players)
 
-    # secret_phrase = setupPhrase()
-    # secret_phrase_display = '_ _ _ _ _' from secret_phrase
+    print(f"The finalits is {winner['player']}.")
 
-    # for letter in ['R', 'S', 'T', 'L', 'N', 'E']:
-    #     revealLetter(letter, secret_phrase, secret_phrase_display)
+    # set a new secret word
+    secret_phrase = setupPhrase(phrases)
+    print(secret_phrase)
 
-    # print('enter 3 more consonants')
-    # c1 = getValidConsonant() 
-    # c2 = getValidConsonant() 
-    # c3 = getValidConsonant()
-    # print('enter a vowel')
-    # v = getValidVowel()
+    display = list(secret_phrase[0])
+    
+    for i in range(len(display)):
+        if secret_phrase[0][i] != ' ':
+            display[i] = '_'
+    guessed_letters = ['r', 's', 't', 'l', 'n', 'e']
 
-    # guesses = [c1, c2, c3, v]
-    # for letter in guesses:
-    #     revealLetter(letter, secret_phrase, secret_phrase_display)
+    for letter in guessed_letters:
+        revealLetter(letter, secret_phrase, display)
 
-    # print("you have 20 seconds to guess the phrase")
-    # start = time.start()
-    # result = guessThePhrase(secret_phrase)
-    # end = time.time()
+    printDisplay(winner, secret_phrase, display, guessed_letters, "Final")
 
-    # if result == 0 
-    #     if (end - start) < 20
-    #         print("you win ")
-    #         winner['money'] += 5000
-    #     else
-    #         print('You guessed correctly but you ran out of time')
-    # else
-    #     print(f'your answer was wrong, the correct asnwer was {secret_phrase}')
+    print('Enter 3 more consonants.')
+    c1 = getValidConsonant(guessed_letters) 
+    c2 = getValidConsonant(guessed_letters) 
+    c3 = getValidConsonant(guessed_letters)
+    v = getValidVowel(guessed_letters)
+
+    guesses = [c1, c2, c3, v]
+    for letter in guesses:
+        revealLetter(letter, secret_phrase, display)
+
+    printDisplay(winner, secret_phrase, display, guessed_letters, "Final")
+
+    print("You have 20 seconds to guess the phrase.")
+    start = time.time()
+    result = guessThePhrase(secret_phrase)
+    end = time.time()
+
+    if result == 0:
+        if (end - start) < 20:
+            print("You win $10000")
+            winner['total bank'] += 10000
+        else:
+            print('You guessed correctly but you ran out of time.\n')
+    else:
+        print(f'Your answer was wrong, the correct asnwer was {secret_phrase}.\n')
 
 
-    # print("Final results")
-    # for player in player_list:
-    #     print(f"Player {player['player']}, ${player['money']}, ${player['total']")
+    print("Final results")
+    for player in list_of_players:
+        print(f"{player['player']:-<15} $ {player['total bank']}")
 
 
 def roundResults(round, list_of_players):
-    print(f"Round {round} results")
+    print(f"\nRound {round} results")
     max = 0
-    
+
+    for player in list_of_players:
+        print(f"{player['player']:-<15} $ {player['money']}")
+
     #in case there is a tie
     winners_list = []
     
     for player in list_of_players:
         if player['money'] > max:
             max = player['money']
-            winners_list.append(player)
-        elif player['money'] == max:
+
+    for player in list_of_players:
+        if player['money'] == max:
             winners_list.append(player)
     
     winner = random.choice(winners_list)
     
-    print(f"The winner of round {round} is {winner['player']}: $ {winner['money']}.")
+    print(f"The winner of round {round} is {winner['player']}: $ {winner['money']}.\n")
     
     for player in list_of_players:
         if player == winner:
             player['total bank'] += player['money']
         player['money'] = 0
 
+    # fixing order for next round
+    # first player goes to last postion
+    first = list_of_players.pop(0)
+    list_of_players.append(first)
 
     return winner
 
- 
+def finalWinner(list_of_players):
+     #in case there is a tie
+    winners_list = []
+    max = 0
+
+    for player in list_of_players:
+        if player['total bank'] > max:
+            max = player['total bank']
+
+    for player in list_of_players:
+        if player['total bank'] == max:
+            winners_list.append(player)
+
+    return random.choice(winners_list)
 
 # retruns true if display is hiding only vowels
 def onlyVowelsLeft(secret_phrase, display):
