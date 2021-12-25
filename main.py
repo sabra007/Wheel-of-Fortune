@@ -61,9 +61,11 @@ def game(list_of_players, wheel, phrases):
 
         round_is_over = False
         guessed_letters = []
+        jackpot = 0
+        spins = 0
         # set a new secret word
         secret_phrase = setupPhrase(phrases)
-        print(secret_phrase)
+        #print(secret_phrase)
 
         display = list(secret_phrase[0])
         
@@ -71,6 +73,10 @@ def game(list_of_players, wheel, phrases):
             if secret_phrase[0][i] != ' ':
                 display[i] = '_'
 
+        if round == 2:
+            wheel.append('JACKPOT')
+            spins = 0
+            jackpot = 5000
 
 
         while not round_is_over:
@@ -80,7 +86,7 @@ def game(list_of_players, wheel, phrases):
                 turn_is_over = False
                 while not turn_is_over:
                     
-                    turn_outcome = turn(player, secret_phrase, display, guessed_letters, wheel, round) #returns 0, 1, or 2
+                    turn_outcome = turn(player, secret_phrase, display, guessed_letters, wheel, round, spins, jackpot) #returns 0, 1, or 2
 
                     if turn_outcome  == 0: #  round is over
                         round_is_over = True
@@ -115,7 +121,7 @@ def game(list_of_players, wheel, phrases):
 
     # set a new secret word
     secret_phrase = setupPhrase(phrases)
-    print(secret_phrase)
+    # print(secret_phrase)
 
     display = list(secret_phrase[0])
     
@@ -153,7 +159,7 @@ def game(list_of_players, wheel, phrases):
         else:
             print('You guessed correctly but you ran out of time.\n')
     else:
-        print(f'Your answer was wrong, the correct asnwer was {secret_phrase}.\n')
+        print(f'Your answer was wrong, the correct asnwer was {secret_phrase[0]}.\n')
 
 
     print("Final results")
@@ -242,7 +248,7 @@ def wantTobuyAVowel():
 # returns 0 if round is over (word is guessed)
 # returns 1 if turn is over
 # returns 2 if turn is not over
-def turn(player, secret_phrase, display, guessed_letters, wheel, round):
+def turn(player, secret_phrase, display, guessed_letters, wheel, round, spins, jackpot):
     
     printDisplay(player, secret_phrase, display, guessed_letters, round)
     
@@ -268,12 +274,20 @@ def turn(player, secret_phrase, display, guessed_letters, wheel, round):
         
         # spin the wheel
         if choice == 's':
-            
+
+            spins += 1
+
             wheel_value = random.choice(wheel)
 
-            if isinstance(wheel_value, int):
+            if isinstance(wheel_value, int) or wheel_value == 'JACKPOT':
 
-                print(f"The wheel landed on ${wheel_value}")
+                if wheel_value == 'JACKPOT':
+                    print('JACKPOT')
+                    wheel_value = 5000 + spins * 1000
+                    print(f"The value of JACKPOT is ${wheel_value}")
+                    spins = 0
+                else:   
+                    print(f"The wheel landed on ${wheel_value}")
 
                 consonant = getValidConsonant(guessed_letters) 
                 
@@ -286,7 +300,7 @@ def turn(player, secret_phrase, display, guessed_letters, wheel, round):
                     player['money'] += count * wheel_value 
                     
                     if count > 1:
-                        print(f"There are {count} number of {consonant.upper()}s.\nYou get ${count * wheel_value}.")
+                        print(f"There are {count} {consonant.upper()}s.\nYou get ${count * wheel_value}.")
                     else:
                         print(f"There is one {consonant}.\nYou get ${wheel_value}.")
                     revealLetter(consonant, secret_phrase, display)
@@ -307,7 +321,6 @@ def turn(player, secret_phrase, display, guessed_letters, wheel, round):
                 print("BANKRUPT")
                 player['money'] = 0
                 return 1 # turn is over
-
             else:
                 print("Lose a Turn")
                 return 1 # turn is over
