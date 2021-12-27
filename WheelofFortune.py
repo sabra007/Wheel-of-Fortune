@@ -45,7 +45,7 @@ def start():
 
     random.shuffle(list_of_players)
 
-    #phrases = cleanData()
+    phrases = cleanData()
 
     # wheel
     wheel = ['BANKRUPT', 'Lose a Turn','Mystery', 100, 150, 200, 250, 300, 350, 400, 400, 450, 500, 500, 500, 550, 600, 650, 650, 700, 700, 750, 800, 850, 900]
@@ -65,7 +65,7 @@ def game(list_of_players, wheel, phrases):
 
         # set a new secret word
         secret_phrase = setupPhrase(phrases)
-        print(secret_phrase)
+        #print(secret_phrase)
 
         display = list(secret_phrase[0])
         
